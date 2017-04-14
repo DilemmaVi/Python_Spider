@@ -8,6 +8,7 @@ import math
 import image_OCR
 import SqlHelper
 import SpiderLog
+import traceback
 
 def LocalTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
@@ -100,7 +101,7 @@ try:
 			else:
 				Index+= 1
 except Exception as e:
-	print(e)
+	print(LocalTime()+traceback.format_exc())
 	print(LocalTime()+'+遇到错误，休眠10分钟后重试')
 	SpiderLog.writeErrorLog(e)
 	#发生未知错误时，休眠10分钟后再尝试
