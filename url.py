@@ -63,7 +63,8 @@ while True:
 					#用 json解码取得的网页内容
 					raw=r.json()
 				except Exception as e:
-					print(traceback.format_exc())
+					SendMessage(traceback.format_exc())
+					writeErrorLog(traceback.format_exc())
 					if str(traceback.format_exc()).find('JSONDecodeError')>0:
 						continue
 					else:
@@ -106,9 +107,9 @@ while True:
 								if count==101 and k=='Count':
 									count=math.ceil(int(v)/20) if math.ceil(int(v)/20)<=100 else 100
 
-				print (LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...'+'（总共'+str(count)+'页）')
-				SpiderLog.writeIndfoLog('正在获取'+x+':第'+str(Index)+'页的内容...'+'（总共'+str(count)+'页）')
-				SendMessage(LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...'+'（总共'+str(count)+'页）')	
+				print (LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')
+				SpiderLog.writeIndfoLog('正在获取'+x+':第'+str(Index)+'页的内容...')
+				SendMessage(LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')	
 				#如果发现法院名称与数据库不一致的，以网站的为准更新数据库数据
 				if IsUpdateCourt!='':
 					SqlHelper.UpdateCourt(x,IsUpdateCourt)
