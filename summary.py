@@ -144,6 +144,8 @@ while True:
 			print(LocalTime()+traceback.format_exc())
 			if str(traceback.format_exc()).find('Failed to establish a new connection')>0:
 				time.sleep(60)
+			elif str(traceback.format_exc()).find('JSONDecodeError')>0:
+				time.sleep(10)
 			else:
 				print(LocalTime()+':遇到错误，休眠10分钟后重试')
 				#发生未知错误时，休眠10分钟后再尝试
