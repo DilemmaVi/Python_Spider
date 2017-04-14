@@ -70,7 +70,3 @@ def UpdateCourt(OldCourtName,NewCourtName):
 	cursor=con.cursor()
 	cursor.execute(sql)
 	con.commit()
-
-
-df=GetCourtList()
-df.to_excel(r'G:\法院名称列表(新)',sheet_name='Sheet1')
