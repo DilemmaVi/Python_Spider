@@ -116,9 +116,15 @@ while True:
 			pattern_IssuedNumber=r"right;.*?>(.*?)</div>"
 			pattern_Title=r'"Title":"(.*?)"'
 			pattern_Conten=r'>(.*?)<'
-			Title.append(re.findall(pattern_Title, str(JsonData))[0])
-			IssuedNumber.append(re.findall(pattern_IssuedNumber, str(JsonData))[0])
+			#对纯空白页面进行跳过处理
+			try:
+				Title.append(re.findall(pattern_Title, str(JsonData))[0])
+			except Exception as e:
+				time.sleep(5)
+				continue
+			IssuedNumber.append(re.findall(pattern_IssuedNumber, str(JsonData)))
 			text=re.findall(pattern_Conten, str(JsonData))
+
 			for ts in text:
 				if ts=='':
 					text.remove(ts)
