@@ -70,3 +70,9 @@ def UpdateCourt(OldCourtName,NewCourtName):
 	cursor=con.cursor()
 	cursor.execute(sql)
 	con.commit()
+
+def UdateTotalCount(CourtName,TotalCount):
+	sql='UPDATE [SpiderData].[dbo].[CourtList] SET TotalCount = '+"'"+TotalCount+"'"+'WHERE Court='+"'"+CourtName+"'"
+	cursor=con.cursor()
+	cursor.execute(sql)
+	con.commit()

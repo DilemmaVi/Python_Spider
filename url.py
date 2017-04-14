@@ -21,7 +21,7 @@ def SendMessage(message):
 	s.sendto(message.encode(encoding='utf-8'),(host,port))
 
 
-print (LocalTime()+':爬虫正在启动...')
+# print (LocalTime()+':爬虫正在启动...')
 SpiderLog.writeIndfoLog('爬虫正在启动...')
 SendMessage(LocalTime()+':爬虫正在启动...')
 
@@ -39,7 +39,7 @@ while True:
 	try:
 		for x in CourtData: 
 			CourtName_DocID=SqlHelper.CourtName_DocID(x)
-			print (LocalTime()+':正在获取'+x+'的内容')
+			# print (LocalTime()+':正在获取'+x+'的内容')
 			SpiderLog.writeIndfoLog('正在获取'+x+'的内容')
 			SendMessage(LocalTime()+':正在获取'+x+'的内容')	
 			#这是页数、程序休息时间的定义和三个空的列表用来装筛选后的数据。
@@ -49,6 +49,7 @@ while True:
 			flag=False
 			CountData=False
 			IsUpdateCourt=''
+			TotalCount='0'
 			
 			while Index <=count:
 				OcrFlag=True
@@ -64,7 +65,7 @@ while True:
 					raw=r.json()
 				except Exception as e:
 					SendMessage(traceback.format_exc())
-					writeErrorLog(traceback.format_exc())
+					SpiderLog.writeErrorLog(traceback.format_exc())
 					if str(traceback.format_exc()).find('JSONDecodeError')>0:
 						continue
 					else:
@@ -104,22 +105,24 @@ while True:
 										CourtName.append(v)	
 								if k=='Count' and int(v)==0:
 									CountData=True
-								if count==101 and k=='Count':
+								if count==100 and k=='Count':
+									TotalCount=v
 									count=math.ceil(int(v)/20) if math.ceil(int(v)/20)<=100 else 100
 
-				print (LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')
+				# print (LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')
 				SpiderLog.writeIndfoLog('正在获取'+x+':第'+str(Index)+'页的内容...')
 				SendMessage(LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')	
 				#如果发现法院名称与数据库不一致的，以网站的为准更新数据库数据
 				if IsUpdateCourt!='':
 					SqlHelper.UpdateCourt(x,IsUpdateCourt)
-					print('更新法院成功')				
+					# print('更新法院成功')
+				SqlHelper.UdateTotalCount(x, TotalCount)				
 				#当DcoID总量大于100时将DocID写入到数据库
 				if len(DocID)>1:
 
 					df=pd.DataFrame({'CourtName':CourtName,'DocID':DocID,'IsPull':IsPull,'CreateTime':CreateTime})
 					SqlHelper.InputUrl(df=df)
-					print('更新数据成功')					
+					# print('更新数据成功')					
 					DocID=[]
 					CourtName=[]
 					IsPull=[]
@@ -127,13 +130,14 @@ while True:
 				#这一行是让程序休眠，避免产生验证码验证
 				time.sleep(SleepNum)
 				if CountData:
-					print(LocalTime()+':该法院未查到数据，跳入爬取下一个法院')
+					# print(LocalTime()+':该法院未查到数据，跳入爬取下一个法院')
+					SendMessage(LocalTime()+':该法院未查到数据，跳入爬取下一个法院')
 					# NOdata.append(x)
 					Index+=101
 				if flag:
-					print(LocalTime()+':发现重复内容，跳入爬取下一个法院')
+					# print(LocalTime()+':发现重复内容，跳入爬取下一个法院')
 					SpiderLog.writeIndfoLog('发现重复内容，跳入爬取下一个法院')
-					SendMessage('发现重复内容，跳入爬取下一个法院')
+					SendMessage(LocalTime()+':发现重复内容，跳入爬取下一个法院')
 					Index+=101
 				else:
 					Index+= 1
@@ -141,9 +145,8 @@ while True:
 		print(LocalTime()+traceback.format_exc())
 		SpiderLog.writeErrorLog(traceback.format_exc())
 		SendMessage(traceback.format_exc())
-		print(LocalTime()+'+遇到错误，休眠10分钟后重试')
-		SendMessage(LocalTime()+'+遇到错误，休眠10分钟后重试')
-		SpiderLog.writeErrorLog(e)
+		# print(LocalTime()+'+遇到错误，休眠10分钟后重试')
+		SendMessage(LocalTime()+':遇到错误，休眠10分钟后重试')
 		#发生未知错误时，休眠10分钟后再尝试
 		time.sleep(600)
 	#对没有数据的法院进行记录

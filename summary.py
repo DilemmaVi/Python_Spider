@@ -116,15 +116,9 @@ while True:
 			pattern_IssuedNumber=r"right;.*?>(.*?)</div>"
 			pattern_Title=r'"Title":"(.*?)"'
 			pattern_Conten=r'>(.*?)<'
-			#对纯空白页面进行跳过处理
-			try:
-				Title.append(re.findall(pattern_Title, str(JsonData))[0])
-			except Exception as e:
-				time.sleep(5)
-				continue
-			IssuedNumber.append(re.findall(pattern_IssuedNumber, str(JsonData)))
+			Title.append(re.findall(pattern_Title, str(JsonData))[0])
+			IssuedNumber.append(re.findall(pattern_IssuedNumber, str(JsonData))[0])
 			text=re.findall(pattern_Conten, str(JsonData))
-
 			for ts in text:
 				if ts=='':
 					text.remove(ts)
@@ -152,10 +146,11 @@ while True:
 				time.sleep(60)
 			elif str(traceback.format_exc()).find('JSONDecodeError')>0:
 				time.sleep(10)
+			elif str(traceback.format_exc()).find('JsonData')>0:
+				time.sleep(10)	
 			else:
 				print(LocalTime()+':遇到错误，休眠10分钟后重试')
 				#发生未知错误时，休眠10分钟后再尝试
 				time.sleep(600)
 
-   
    
