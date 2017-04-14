@@ -10,8 +10,8 @@ scon = create_engine('mssql+pymssql://sa:bdyh@2016@192.168.0.186/SpiderData')
 #从数据库获取法院列表
 def GetCourtList():
 	sql='select Court from CourtList'
-	sql1='SELECT Court FROM [SpiderData].[dbo].CourtList where Court not in (select distinct courtname from SpiderUrl)'
-	data=pd.read_sql(sql1, con)
+	#sql1='SELECT Court FROM [SpiderData].[dbo].CourtList where Court not in (select distinct courtname from SpiderUrl)'
+	data=pd.read_sql(sql, con)
 	df=pd.DataFrame(data)
 	return df
 
@@ -23,7 +23,7 @@ def InputUrl(df=pd.DataFrame()):
 	except Exception as e:
 		return '程序发生异常'
 	
-
+#通过法院名称获取DocID，用于判断重复数据
 def CourtName_DocID(CourtName):
 	term=str(CourtName)
 	sql='select DocID from SpiderUrl where CourtName='+"'"+term+"'"
@@ -31,12 +31,14 @@ def CourtName_DocID(CourtName):
 	df=set(data)
 	return df
 
+#获取待爬取的URL数据
 def GetUrlList():
 	sql='select DocID from SpiderUrl where IsPull=0 order by createTime desc'
 	data=pd.read_sql(sql, con)
 	df=pd.DataFrame(data)['DocID']
 	return df
 
+#将获取到的正文插入到数据库
 def InsertContent(df=pd.DataFrame()):
 	try:
 		df.to_sql("LegalData", scon,if_exists='append',index=False)
@@ -44,6 +46,7 @@ def InsertContent(df=pd.DataFrame()):
 	except Exception as e:
 		return 'Error'
 
+#将爬完的数据进行标识
 def UpdateUrl(url):
 	sql='update SpiderUrl set IsPull=1 where DocID='+"'"+url+"'"
 	cursor=con.cursor()
@@ -52,3 +55,22 @@ def UpdateUrl(url):
 	if cursor.rowcount==1:
 		print('URL数据更新成功')
 
+#通过excel表导入法院名称数据到数据库
+def  InsertCourtData():
+	df=pd.read_excel(r'C:\Users\YF-INT6\Downloads\审理法院列表.xlsx')
+	df.rename(columns={'审理法院列表':'Court'},inplace=True)
+	print(df)
+	df.to_sql("CourtList",scon,if_exists='append',index=False)
+
+#发现与网站法院名称不一致时，更新最新数据到数据库
+def UpdateCourt(OldCourtName,NewCourtName):
+	term1=str(OldCourtName)
+	term2=str(NewCourtName)
+	sql='UPDATE [SpiderData].[dbo].[CourtList] SET [Court] = '+"'"+term2+"'" +'WHERE Court='+"'"+term1+"'"
+	cursor=con.cursor()
+	cursor.execute(sql)
+	con.commit()
+
+
+df=GetCourtList()
+df.to_excel(r'G:\法院名称列表(新)',sheet_name='Sheet1')
