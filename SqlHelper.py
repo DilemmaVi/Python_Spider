@@ -32,8 +32,11 @@ def CourtName_DocID(CourtName):
 	return df
 
 #获取待爬取的URL数据
-def GetUrlList():
-	sql='select DocID from SpiderUrl where IsPull=0 order by createTime desc'
+def GetUrlList(num=0):
+	sql='select distinct top(5000) DocID,CreateTime from SpiderUrl where IsPull=0 order by createTime desc'
+	num1=num*1000+1
+	num2=num*1000+1000
+	sql1='select * from (select *,ROW_NUMBER() OVER (order by createtime desc) AS ROWNUM from SpiderUrl) t where ROWNUM between '+str(num1) +' and '+ str(num2)+ ' and IsPull=0'
 	data=pd.read_sql(sql, con)
 	df=pd.DataFrame(data)['DocID']
 	return df

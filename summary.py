@@ -69,7 +69,7 @@ while True:
 				image_OCR.image_ocr()
 				LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls)
 				time.sleep(5)
-				LegalContent=req.get('http://wenshu.court.gov.cn/CreateContentJS/CreateContentJS.aspx?DocID='+ls,
+				LegalContent=req.get('http://wenshu.court.gov.cn/CreateContentJS/CreateContentJS.aspx?DocID='+ls['docId'],
 					headers=my_headers)
 
 			#获取概要信息
@@ -133,8 +133,15 @@ while True:
 			pattern_IssuedNumber=r"right;.*?>(.*?)</div>"
 			pattern_Conten=r'>(.*?)<'
 			files=str(LegalContent.content.decode('utf-8')).replace('\\','')
-			Title.append(re.findall(pattern_Title, files)[0])
-			IssuedNumber.append(re.findall(pattern_IssuedNumber, files)[0])
+			try:
+				Title.append(re.findall(pattern_Title, files)[0])
+			except Exception as e:
+				Title.append('')			
+			try:
+				IssuedNumber.append(re.findall(pattern_IssuedNumber, files)[0])
+			except Exception as e:
+				IssuedNumber.append('')
+			
 			Text=re.findall(pattern_Conten, files)
 			for i in Text:
 				try:
@@ -163,6 +170,8 @@ while True:
 			elif str(traceback.format_exc()).find('JSONDecodeError')>0:
 				time.sleep(10)
 			elif str(traceback.format_exc()).find('JsonData')>0:
+				time.sleep(10)	
+			elif str(traceback.format_exc()).find('proxy')>0:
 				time.sleep(10)	
 			else:
 				print(LocalTime()+':遇到错误，休眠10分钟后重试')
