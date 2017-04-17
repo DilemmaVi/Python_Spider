@@ -110,36 +110,52 @@ while True:
 			else:
 				Appellor.append(AppellorData.replace('&times;','X'))
 
-			#获取正文信息
-			re_pattern=' = "(.*?)";'
-			JsonData=demjson.decode(str(re.findall(re_pattern,LegalContent.content.decode('utf-8'))).replace(r'\\',''))
-			pattern_IssuedNumber=r"right;.*?>(.*?)</div>"
+			#获取正文信息,因json解析常出错，改为正则匹配
+			# re_pattern=' = "(.*?)";'
+			# JsonData=demjson.decode(str(re.findall(re_pattern,LegalContent.content.decode('utf-8'))).replace(r'\\',''))
+			# pattern_IssuedNumber=r"right;.*?>(.*?)</div>"
+			# pattern_Title=r'"Title":"(.*?)"'
+			# pattern_Conten=r'>(.*?)<'
+			# Title.append(re.findall(pattern_Title, str(JsonData))[0])
+			# IssuedNumber.append(re.findall(pattern_IssuedNumber, str(JsonData))[0])
+			# text=re.findall(pattern_Conten, str(JsonData))
+			# for ts in text:
+			# 	if ts=='':
+			# 		text.remove(ts)
+			# for i in text:
+			# 	try:
+			# 		LegalContentData+=i+'\n'
+			# 	except Exception as e:
+			# 		pass
+
+			#正则匹配获取正文内容
 			pattern_Title=r'"Title":"(.*?)"'
+			pattern_IssuedNumber=r"right;.*?>(.*?)</div>"
 			pattern_Conten=r'>(.*?)<'
-			Title.append(re.findall(pattern_Title, str(JsonData))[0])
-			IssuedNumber.append(re.findall(pattern_IssuedNumber, str(JsonData))[0])
-			text=re.findall(pattern_Conten, str(JsonData))
-			for ts in text:
-				if ts=='':
-					text.remove(ts)
-			for i in text:
+			files=str(LegalContent.content.decode('utf-8')).replace('\\','')
+			Title.append(re.findall(pattern_Title, files)[0])
+			IssuedNumber.append(re.findall(pattern_IssuedNumber, files)[0])
+			Text=re.findall(pattern_Conten, files)
+			for i in Text:
 				try:
 					LegalContentData+=i+'\n'
 				except Exception as e:
 					pass
-				
-			content.append(LegalContentData.replace('&times;','X').replace(r'\u3000',''))
+			#如果标题为空，则跳过	
+			if Title[0]=='':
+				pass
+			else:
+				content.append(LegalContentData.replace('&times;','X').replace(r'\u3000',''))
+
 			# print('Title:'+str(len(Title))+'IssuedNumber:'+str(len(IssuedNumber))+'Title:'+str(len(Court))+'TrialDate:'+str(len(TrialDate))
 			# 	+'CaseType:'+str(len(CaseType))+'TrialRound:'+str(len(TrialRound))+'content:'+str(len(content))+'Appellor:'+str(len(Appellor))
 			# 	+'LegalBase:'+str(len(LegalBase))+'CreateTime:'+str(len(CreateTime)))
-
-
-			df=pd.DataFrame({'DocID':ls['docId'],'Title':Title,'IssuedNumber':IssuedNumber,'Court':Court,'TrialDate':TrialDate,'CaseType':CaseType,
-				'TrialRound':TrialRound,'Doc':content,'appellor':Appellor,'LegalBase':LegalBase,'CreateTime':CreateTime})
-			DataInsert=SqlHelper.InsertContent(df)
-			if DataInsert=='Success':
-				SqlHelper.UpdateUrl(ls['docId'])
-			time.sleep(5)
+				df=pd.DataFrame({'DocID':ls['docId'],'Title':Title,'IssuedNumber':IssuedNumber,'Court':Court,'TrialDate':TrialDate,'CaseType':CaseType,
+					'TrialRound':TrialRound,'Doc':content,'appellor':Appellor,'LegalBase':LegalBase,'CreateTime':CreateTime})
+				DataInsert=SqlHelper.InsertContent(df)
+				if DataInsert=='Success':
+					SqlHelper.UpdateUrl(ls['docId'])
+				time.sleep(5)
 		except Exception as e:
 			print(LocalTime()+traceback.format_exc())
 			if str(traceback.format_exc()).find('Failed to establish a new connection')>0:
