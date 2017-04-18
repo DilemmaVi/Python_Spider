@@ -18,7 +18,7 @@ def image_ocr(proxies=''):
 	Index=1
 	while Index<100:
 		my_headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0',}
-		if proxies='':
+		if proxies=='':
 			response=req.get('http://wenshu.court.gov.cn/User/ValidateCode',headers=my_headers)
 		else:
 			response=req.get('http://wenshu.court.gov.cn/User/ValidateCode',headers=my_headers,proxies=proxies)  
@@ -40,7 +40,7 @@ def image_ocr(proxies=''):
 		data={'ValidateCode':tools[0].image_to_string(Image.open('1.jpg'),lang='eng')}
 		 
 		#验证码post
-		if proxies='':
+		if proxies=='':
 			r=req.post(url,headers=my_headers, data = data)
 		else:
 			r=req.post(url,headers=my_headers, data = data,proxies=proxies)
