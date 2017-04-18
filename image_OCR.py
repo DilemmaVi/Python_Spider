@@ -13,7 +13,7 @@ import requests as req
 import SpiderLog
 
 def image_ocr(proxies=''):
-	print('启动验证码识别程序...')
+	#print('启动验证码识别程序...')
 	SpiderLog.writeIndfoLog('启动验证码识别程序...')
 	Index=1
 	while Index<100:
@@ -45,14 +45,14 @@ def image_ocr(proxies=''):
 		else:
 			r=req.post(url,headers=my_headers, data = data,proxies=proxies)
 		if r.text=='1':
-			print ('识别成功！！！')
+			#print ('识别成功！！！')
 			SpiderLog.writeIndfoLog('识别成功！！！')
 			Index+=100
 		else:
-			print ('第'+str(Index)+'次识别失败，正在重试...')
+			#print ('第'+str(Index)+'次识别失败，正在重试...')
 			SpiderLog.writeIndfoLog('第'+str(Index)+'次识别失败，正在重试...')
 			Index+=1
-	print ('重新启动爬虫程序...')
+	#print ('重新启动爬虫程序...')
 	SpiderLog.writeIndfoLog('重新启动爬虫程序...')	
 
 if __name__ == '__main__':
