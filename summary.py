@@ -24,15 +24,15 @@ data=[]           #URL列表
 #浏览器头部信息
 my_headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0',}
 proxies={'http':'120.132.71.212:80'}
-print(LocalTime()+':正在启动爬虫程序....')
+#print(LocalTime()+':正在启动爬虫程序....')
 SendMessage(LocalTime()+':爬虫正在启动...')
 #获取需爬取信息的URL
 while True:	
 	for x in SqlHelper.GetUrlList(1):
 		data.append({'docId':x})
-	print(LocalTime()+':正在获取待爬URL...')
+	#print(LocalTime()+':正在获取待爬URL...')
 	SendMessage(LocalTime()+':正在获取待爬URL...')
-	print(LocalTime()+':本次需要爬取URL总数为：'+str(len(data)))
+	#print(LocalTime()+':本次需要爬取URL总数为：'+str(len(data)))
 	SendMessage(LocalTime()+':本次需要爬取URL总数为：'+str(len(data)))
 	if len(data)==0:
 		time(600)
@@ -55,7 +55,7 @@ while True:
 		LegalBase=[]      #相关法规
 		CreateTime=[]     #创建时间，默认为当前系统时间
 		index+=1
-		print(LocalTime()+':正在获取'+ls['docId']+'的内容;\n本次为英华爬虫第'+str(index)+'次爬取内容')
+		#print(LocalTime()+':正在获取'+ls['docId']+'的内容;\n本次为英华爬虫第'+str(index)+'次爬取内容')
 		SendMessage(LocalTime()+':正在获取'+ls['docId']+'的内容;\n本次为英华爬虫第'+str(index)+'次爬取内容')
 		LegalData=''
 		LegalContentData=''
@@ -70,7 +70,7 @@ while True:
 				headers=my_headers,proxies=proxies)
 			#判断获取内容是否正确，不正确可能是内部服务器问题，休眠5分钟再尝试爬取
 			if LegalContent.content.decode('utf-8').find('请开启JavaScript并刷新该页')>0:
-				print(LocalTime()+':遇到错误，休眠5分钟后重试')
+				#print(LocalTime()+':遇到错误，休眠5分钟后重试')
 				SendMessage(LocalTime()+':遇到错误，休眠5分钟后重试')
 				time.sleep(300)
 				continue
@@ -174,7 +174,8 @@ while True:
 					SqlHelper.UpdateUrl(ls['docId'])
 				time.sleep(5)
 		except Exception as e:
-			print(LocalTime()+traceback.format_exc())
+			#print(LocalTime()+traceback.format_exc())
+			SendMessage(LocalTime()+traceback.format_exc())
 			if str(traceback.format_exc()).find('Failed to establish a new connection')>0:
 				time.sleep(60)
 			elif str(traceback.format_exc()).find('JSONDecodeError')>0:
@@ -184,7 +185,7 @@ while True:
 			elif str(traceback.format_exc()).find('proxy')>0:
 				time.sleep(10)	
 			else:
-				print(LocalTime()+':遇到错误，休眠10分钟后重试')
+				#print(LocalTime()+':遇到错误，休眠10分钟后重试')
 				SendMessage(LocalTime()+':遇到错误，休眠10分钟后重试')
 				#发生未知错误时，休眠10分钟后再尝试
 				time.sleep(600)
