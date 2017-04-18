@@ -56,7 +56,7 @@ def UpdateUrl(url):
 	cursor.execute(sql)
 	con.commit()
 	if cursor.rowcount==1:
-		print('URL数据更新成功')
+		#print('URL数据更新成功')
 
 #通过excel表导入法院名称数据到数据库
 def  InsertCourtData():
