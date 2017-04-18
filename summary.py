@@ -10,6 +10,9 @@ import time
 import re
 import traceback
 import socket
+import io
+import sys
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 def LocalTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))

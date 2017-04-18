@@ -5,7 +5,8 @@ import time
 from logging.handlers import TimedRotatingFileHandler
 from logging.handlers import RotatingFileHandler
 import re
-
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 #写url运行日志
 def writeIndfoLog(message):
 	log_fmt = '%(asctime)s\t%(levelname)s: %(message)s'

@@ -11,6 +11,8 @@ from PIL import Image
 import urllib.request
 import requests as req
 import SpiderLog
+import io
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer,encoding='utf-8')
 
 def image_ocr(proxies=''):
 	#print('启动验证码识别程序...')
