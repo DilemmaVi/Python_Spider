@@ -37,7 +37,7 @@ def GetUrlList(num=0):
 	num1=num*1000+1
 	num2=num*1000+1000
 	sql1='select * from (select *,ROW_NUMBER() OVER (order by createtime desc) AS ROWNUM from SpiderUrl) t where ROWNUM between '+str(num1) +' and '+ str(num2)+ ' and IsPull=0'
-	data=pd.read_sql(sql, con)
+	data=pd.read_sql(sql1, con)
 	df=pd.DataFrame(data)['DocID']
 	return df
 
@@ -78,4 +78,4 @@ def UdateTotalCount(CourtName,TotalCount):
 	sql='UPDATE [SpiderData].[dbo].[CourtList] SET TotalCount = '+"'"+TotalCount+"'"+'WHERE Court='+"'"+CourtName+"'"
 	cursor=con.cursor()
 	cursor.execute(sql)
-	con.commit()
+con.commit()

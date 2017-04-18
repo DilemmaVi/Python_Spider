@@ -9,23 +9,31 @@ import urllib
 import time
 import re
 import traceback
+import socket
 
 def LocalTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
-
-
+def SendMessage(message):
+	port=8081
+	host='192.168.4.191'
+	s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+	s.sendto(message.encode(encoding='utf-8'),(host,port))
 
 data=[]           #URL列表
 #浏览器头部信息
-my_headers={'User-Agent':'User-Agent:Mozilla/5.0(Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.95Safari/537.36 Core/1.50.1280.400',}
+my_headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0',}
+proxies={'http':'120.132.71.212:80'}
 print(LocalTime()+':正在启动爬虫程序....')
+SendMessage(LocalTime()+':爬虫正在启动...')
 #获取需爬取信息的URL
 while True:	
-	for x in SqlHelper.GetUrlList():
+	for x in SqlHelper.GetUrlList(1):
 		data.append({'docId':x})
 	print(LocalTime()+':正在获取待爬URL...')
+	SendMessage(LocalTime()+':正在获取待爬URL...')
 	print(LocalTime()+':本次需要爬取URL总数为：'+str(len(data)))
+	SendMessage(LocalTime()+':本次需要爬取URL总数为：'+str(len(data)))
 	if len(data)==0:
 		time(600)
 		continue
@@ -48,6 +56,7 @@ while True:
 		CreateTime=[]     #创建时间，默认为当前系统时间
 		index+=1
 		print(LocalTime()+':正在获取'+ls['docId']+'的内容;\n本次为英华爬虫第'+str(index)+'次爬取内容')
+		SendMessage(LocalTime()+':正在获取'+ls['docId']+'的内容;\n本次为英华爬虫第'+str(index)+'次爬取内容')
 		LegalData=''
 		LegalContentData=''
 		AppellorData=''
@@ -55,22 +64,23 @@ while True:
 		CaseTypeData=''
 		TrialDateData=''
 		try:
-			LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls)
+			LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls,proxies=proxies)
 			time.sleep(3)
 			LegalContent=req.get('http://wenshu.court.gov.cn/CreateContentJS/CreateContentJS.aspx?DocID='+ls['docId'],
-				headers=my_headers)
+				headers=my_headers,proxies=proxies)
 			#判断获取内容是否正确，不正确可能是内部服务器问题，休眠5分钟再尝试爬取
 			if LegalContent.content.decode('utf-8').find('请开启JavaScript并刷新该页')>0:
 				print(LocalTime()+':遇到错误，休眠5分钟后重试')
+				SendMessage(LocalTime()+':遇到错误，休眠5分钟后重试')
 				time.sleep(300)
 				continue
 			#判断是否需要验证码验证，如是启动验证码识别程序		
 			if LegalContent.text.find('VisitRemind')>0:
-				image_OCR.image_ocr()
-				LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls)
+				image_OCR.image_ocr(proxies)
+				LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls,proxies=proxies)
 				time.sleep(5)
 				LegalContent=req.get('http://wenshu.court.gov.cn/CreateContentJS/CreateContentJS.aspx?DocID='+ls['docId'],
-					headers=my_headers)
+					headers=my_headers,proxies=proxies)
 
 			#获取概要信息
 			result=demjson.decode(LegalSummary.json())
@@ -175,7 +185,6 @@ while True:
 				time.sleep(10)	
 			else:
 				print(LocalTime()+':遇到错误，休眠10分钟后重试')
+				SendMessage(LocalTime()+':遇到错误，休眠10分钟后重试')
 				#发生未知错误时，休眠10分钟后再尝试
 				time.sleep(600)
-
-   

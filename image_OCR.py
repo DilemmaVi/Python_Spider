@@ -12,13 +12,17 @@ import urllib.request
 import requests as req
 import SpiderLog
 
-def image_ocr():
+def image_ocr(proxies=''):
 	print('启动验证码识别程序...')
 	SpiderLog.writeIndfoLog('启动验证码识别程序...')
 	Index=1
 	while Index<100:
-		response=urllib.request.urlopen('http://wenshu.court.gov.cn/User/ValidateCode')  
-		html=response.read()
+		my_headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0',}
+		if proxies='':
+			response=req.get('http://wenshu.court.gov.cn/User/ValidateCode',headers=my_headers)
+		else:
+			response=req.get('http://wenshu.court.gov.cn/User/ValidateCode',headers=my_headers,proxies=proxies)  
+		html=response.content
 	    #读取信息流，写图片
 		with open('1.jpg', 'wb')as fp:
 			fp.write(html)	
@@ -30,13 +34,16 @@ def image_ocr():
 			sys.exit(1)
 
 		url='http://wenshu.court.gov.cn/Content/CheckVisitCode'
-		my_headers={'User-Agent':'User-Agent:Mozilla/5.0(Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.95Safari/537.36 Core/1.50.1280.400',}
+		my_headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0',}
 
 		#这一行是post的内容，即验证码
 		data={'ValidateCode':tools[0].image_to_string(Image.open('1.jpg'),lang='eng')}
 		 
 		#验证码post
-		r=req.post(url,headers=my_headers, data = data)
+		if proxies='':
+			r=req.post(url,headers=my_headers, data = data)
+		else:
+			r=req.post(url,headers=my_headers, data = data,proxies=proxies)
 		if r.text=='1':
 			print ('识别成功！！！')
 			SpiderLog.writeIndfoLog('识别成功！！！')
