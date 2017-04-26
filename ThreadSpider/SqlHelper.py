@@ -10,7 +10,6 @@ scon = create_engine('mssql+pymssql://sa:bdyh@2016@192.168.0.186/SpiderData')
 #从数据库获取法院列表
 def GetCourtList():
 	sql='select Court from CourtList'
-	#sql1='SELECT Court FROM [SpiderData].[dbo].CourtList where Court not in (select distinct courtname from SpiderUrl)'
 	data=pd.read_sql(sql, con)
 	df=pd.DataFrame(data)['Court']
 	return df
@@ -46,14 +45,17 @@ def cc_data():
 	return df
 
 #获取待爬取的URL数据
-def GetUrlList(num=0):
-	sql='select distinct top(5000) DocID,CreateTime from SpiderUrl where IsPull=0 order by createTime desc'
-	num1=num*5000+1
-	num2=num*5000+5000
-	sql1='select * from (select *,ROW_NUMBER() OVER (order by createtime desc) AS ROWNUM from SpiderUrl where IsPull=0) t where ROWNUM between '+str(num1) +' and '+ str(num2)
-	data=pd.read_sql(sql1, con)
-	df=pd.DataFrame(data)['DocID']
-	return df
+def GetUrlList():
+	try:
+		sql='select distinct DocID,CreateTime from SpiderUrl where IsPull=0 order by createTime desc'
+		# num1=num*5000+1
+		# num2=num*5000+5000
+		# sql1='select * from (select *,ROW_NUMBER() OVER (order by createtime desc) AS ROWNUM from SpiderUrl where IsPull=0) t where ROWNUM between '+str(num1) +' and '+ str(num2)
+		data=pd.read_sql(sql, con)
+		df=pd.DataFrame(data)['DocID']
+		return df
+	except:
+		return 'error'
 
 #将获取到的正文插入到数据库
 def InsertContent(df=pd.DataFrame()):
@@ -65,17 +67,20 @@ def InsertContent(df=pd.DataFrame()):
 
 #将爬完的数据进行标识
 def UpdateUrl(df=pd.DataFrame()):
-	#sql='update SpiderUrl set IsPull=1 where DocID='+"'"+url+"'"
-	del_sql='delete from cursorTB where 1=1'
-	upt_sql='update SpiderUrl set SpiderUrl.IsPull=cursorTB.IsPull  from SpiderUrl,cursorTB where SpiderUrl.DocID=cursorTB.DocID'
-	cursor=con.cursor()
-	cursor.execute(del_sql)
-	con.commit()
-	df.to_sql('cursorTB', scon,if_exists='append',index=False)
-	cursor.execute(upt_sql)
-	con.commit()
-	if cursor.rowcount>1:
-		print('URL数据更新成功')
+	try:
+		#sql='update SpiderUrl set IsPull=1 where DocID='+"'"+url+"'"
+		del_sql='delete from cursorTB where 1=1'
+		upt_sql='update SpiderUrl set SpiderUrl.IsPull=cursorTB.IsPull  from SpiderUrl,cursorTB where SpiderUrl.DocID=cursorTB.DocID'
+		cursor=con.cursor()
+		cursor.execute(del_sql)
+		con.commit()
+		df.to_sql('cursorTB', scon,if_exists='append',index=False)
+		cursor.execute(upt_sql)
+		con.commit()
+		if cursor.rowcount>1:
+			print('URL数据更新成功')
+	except:
+		pass
 
 #通过excel表导入法院名称数据到数据库
 def  InsertCourtData():
@@ -94,10 +99,13 @@ def UpdateCourt(OldCourtName,NewCourtName):
 	con.commit()
 
 def UdateTotalCount(CourtName,TotalCount):
-	sql='UPDATE [SpiderData].[dbo].[CourtList] SET TotalCount = '+str(TotalCount)+'WHERE Court='+"'"+CourtName+"'"
-	cursor=con.cursor()
-	cursor.execute(sql)
-	con.commit()
+	try:
+		sql='UPDATE [SpiderData].[dbo].[CourtList] SET TotalCount = '+str(TotalCount)+'WHERE Court='+"'"+CourtName+"'"
+		cursor=con.cursor()
+		cursor.execute(sql)
+		con.commit()
+	except:
+		pass
 
 #
 def InsertProxy(df=pd.DataFrame()):
@@ -105,7 +113,7 @@ def InsertProxy(df=pd.DataFrame()):
 		df.to_sql('Proxy', scon,if_exists='append',index=False)
 		return 'Success'
 	except Exception as e:
-		return e
+		print(e)
 
 #获取代理ip数据
 def GetProxyList():

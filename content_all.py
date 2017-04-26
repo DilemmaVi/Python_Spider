@@ -16,15 +16,15 @@ def LocalTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
 
-data=[]           #URL列表
+
 #浏览器头部信息
 my_headers={'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:52.0) Gecko/20100101 Firefox/52.0',}
-proxies={'http':'1.82.216.135:80'}
 print(LocalTime()+':正在启动爬虫程序....')
 SpiderLog.writeContentIFLog('正在启动爬虫程序....')
 #获取需爬取信息的URL
 while True:	
 	try:
+		data=[]           #URL列表
 		for x in SqlHelper.GetUrlList(1):
 			data.append({'docId':x})
 		print(LocalTime()+':正在获取待爬URL...')
@@ -62,10 +62,10 @@ while True:
 			CaseTypeData=''
 			TrialDateData=''
 		
-			LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls,proxies=proxies)
+			LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls)
 			time.sleep(3)
 			LegalContent=req.get('http://wenshu.court.gov.cn/CreateContentJS/CreateContentJS.aspx?DocID='+ls['docId'],
-				headers=my_headers,proxies=proxies)
+				headers=my_headers)
 			#判断获取内容是否正确，不正确可能是内部服务器问题，休眠5分钟再尝试爬取
 			if LegalContent.content.decode('utf-8').find('请开启JavaScript并刷新该页')>0:
 				print(LocalTime()+':遇到错误，休眠5分钟后重试')
@@ -74,11 +74,11 @@ while True:
 				continue
 			#判断是否需要验证码验证，如是启动验证码识别程序		
 			if LegalContent.text.find('VisitRemind')>0:
-				image_OCR.image_ocr(proxies)
-				LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls,proxies=proxies)
+				image_OCR.image_ocr()
+				LegalSummary=req.post('http://wenshu.court.gov.cn/Content/GetSummary',headers=my_headers,data=ls)
 				time.sleep(5)
 				LegalContent=req.get('http://wenshu.court.gov.cn/CreateContentJS/CreateContentJS.aspx?DocID='+ls['docId'],
-					headers=my_headers,proxies=proxies)
+					headers=my_headers)
 
 			#获取概要信息
 			result=demjson.decode(LegalSummary.json())
@@ -161,7 +161,7 @@ while True:
 		elif str(traceback.format_exc()).find('proxy')>0:
 			time.sleep(10)	
 		else:
-			print(LocalTime()+':遇到错误，休眠10分钟后重试')
-
+			print(LocalTime()+':遇到错误，休眠5分钟后重试')
+			SpiderLog.writeContentIFLog('遇到错误，休眠10分钟后重试')
 			#发生未知错误时，休眠10分钟后再尝试
-			time.sleep(600)
+			time.sleep(300)

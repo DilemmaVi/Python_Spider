@@ -9,39 +9,31 @@ import image_OCR
 import SqlHelper
 import SpiderLog
 import traceback
-import socket
+
 
 def LocalTime():
 	return time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
 
-def SendMessage(message):
-	port=8081
-	host='192.168.4.191'
-	s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-	s.sendto(message.encode(encoding='utf-8'),(host,port))
-
-
 # print (LocalTime()+':爬虫正在启动...')
 SpiderLog.writeIndfoLog('爬虫正在启动...')
-SendMessage(LocalTime()+':爬虫正在启动...')
 
 while True:
-	CourtData=SqlHelper.GetCourtList()['Court']
-	# print(LocalTime()+':本次总共需要爬取'+str(len(CourtData))+'个法院的案件链接')
-	SpiderLog.writeIndfoLog('本次总共需要爬取'+str(len(CourtData))+'个法院的案件链接')
-	SendMessage(LocalTime()+':本次总共需要爬取'+str(len(CourtData))+'个法院的案件链接')
-	# NOdata=[]
-	DocID=[]
-	CourtName=[]
-	IsPull=[]
-	CreateTime=[]
-	url='http://wenshu.court.gov.cn/List/ListContent'
 	try:
-		for x in CourtData: 
+		DataCount=SqlHelper.GetCourtList()['Court']
+		# print(LocalTime()+':本次总共需要爬取'+str(len(DataCount))+'个法院的案件链接')
+		SpiderLog.writeIndfoLog('本次总共需要爬取'+str(len(DataCount))+'个法院的案件链接')
+
+		# NOdata=[]
+		DocID=[]
+		CourtName=[]
+		IsPull=[]
+		CreateTime=[]
+		url='http://wenshu.court.gov.cn/List/ListContent'
+		
+		for x in DataCount: 
 			CourtName_DocID=SqlHelper.CourtName_DocID(x)
 			# print (LocalTime()+':正在获取'+x+'的内容')
 			SpiderLog.writeIndfoLog('正在获取'+x+'的内容')
-			SendMessage(LocalTime()+':正在获取'+x+'的内容')	
 			#这是页数、程序休息时间的定义和三个空的列表用来装筛选后的数据。
 			Index=1
 			SleepNum= 3
@@ -64,7 +56,6 @@ while True:
 					#用 json解码取得的网页内容
 					raw=r.json()
 				except Exception as e:
-					SendMessage(traceback.format_exc())
 					SpiderLog.writeErrorLog(traceback.format_exc())
 					if str(traceback.format_exc()).find('JSONDecodeError')>0:
 						continue
@@ -111,7 +102,6 @@ while True:
 
 				# print (LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')
 				SpiderLog.writeIndfoLog('正在获取'+x+':第'+str(Index)+'页的内容...')
-				SendMessage(LocalTime()+':正在获取'+x+':第'+str(Index)+'页的内容...')	
 				#如果发现法院名称与数据库不一致的，以网站的为准更新数据库数据
 				if IsUpdateCourt!='':
 					SqlHelper.UpdateCourt(x,IsUpdateCourt)
@@ -131,27 +121,21 @@ while True:
 				time.sleep(SleepNum)
 				if CountData:
 					# print(LocalTime()+':该法院未查到数据，跳入爬取下一个法院')
-					SendMessage(LocalTime()+':该法院未查到数据，跳入爬取下一个法院')
 					# NOdata.append(x)
-					Index+=101
+					break
 				if flag:
 					# print(LocalTime()+':发现重复内容，跳入爬取下一个法院')
 					SpiderLog.writeIndfoLog('发现重复内容，跳入爬取下一个法院')
-					SendMessage(LocalTime()+':发现重复内容，跳入爬取下一个法院')
-					Index+=101
+					break
 				else:
 					Index+= 1
 	except Exception as e:
-		print(LocalTime()+traceback.format_exc())
 		SpiderLog.writeErrorLog(traceback.format_exc())
-		SendMessage(traceback.format_exc())
-		# print(LocalTime()+'+遇到错误，休眠10分钟后重试')
-		SendMessage(LocalTime()+':遇到错误，休眠10分钟后重试')
 		#发生未知错误时，休眠10分钟后再尝试
 		time.sleep(600)
-	#对没有数据的法院进行记录
-	# NOdf=pd.DataFrame({'Court':NOdata})
-	# NOdf.to_excel(r'G:\1.xlsx',sheet_name='Sheet1')
+		#对没有数据的法院进行记录
+		# NOdf=pd.DataFrame({'Court':NOdata})
+		# NOdf.to_excel(r'G:\1.xlsx',sheet_name='Sheet1')
 
 
 

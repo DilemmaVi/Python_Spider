@@ -14,12 +14,29 @@ def get_count():
 
 	courtList=SqlHelper.GetCourtList()
 	url='http://wenshu.court.gov.cn/List/ListContent'
+	proxyHost = "proxy.abuyun.com"
+	proxyPort = "9020"
+	# 代理隧道验证信息
+	proxyUser = "H1GX6CNSSW177N7D"
+	proxyPass = "B5F2CBAE62C4BDB9"
+	proxyMeta = "http://%(user)s:%(pass)s@%(host)s:%(port)s" % {
+	  "host" : proxyHost,
+	  "port" : proxyPort,
+	  "user" : proxyUser,
+	  "pass" : proxyPass,
+	}
+	proxies = {
+	    "http"  : proxyMeta,
+	    "https" : proxyMeta,
+	}
+
+
 
 	for x in courtList:
 		try:
 			CountResult=''
 			data={'Param':'法院名称:' +x, 'Index': '1','Page':'5','Order':'裁判日期','Direction':'desc'}
-			r=req.post(url,data = data)
+			r=req.post(url,data = data,proxies=proxies)
 			if str(r.text).find('emind')>0:
 				image_OCR.image_ocr('',1)
 				r=req.post(url,data = data)

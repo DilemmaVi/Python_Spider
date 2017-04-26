@@ -12,7 +12,7 @@ def GetCourtList():
 	sql='select Court from CourtList'
 	#sql1='SELECT Court FROM [SpiderData].[dbo].CourtList where Court not in (select distinct courtname from SpiderUrl)'
 	data=pd.read_sql(sql, con)
-	df=pd.DataFrame(data)
+	df=pd.DataFrame(data)['Court']
 	return df
 
 #将爬取到的案件链接写入到数据库中
@@ -31,12 +31,19 @@ def CourtName_DocID(CourtName):
 	df=set(data)
 	return df
 
+#通过法院名称获取法院数据量，对比网站数据量判断是否需要爬取
+def CourtName_TotalCount(CourtName):
+	term=str(CourtName)
+	sql='select TotalCount from CourtList where Court='+"'"+term+"'"
+	data=pd.read_sql(sql, con)['TotalCount']
+	return data
+
 #获取待爬取的URL数据
 def GetUrlList(num=0):
 	sql='select distinct top(5000) DocID,CreateTime from SpiderUrl where IsPull=0 order by createTime desc'
 	num1=num*1000+1
 	num2=num*1000+1000
-	sql1='select * from (select *,ROW_NUMBER() OVER (order by createtime desc) AS ROWNUM from SpiderUrl) t where ROWNUM between '+str(num1) +' and '+ str(num2)+ ' and IsPull=0'
+	sql1='select * from (select *,ROW_NUMBER() OVER (order by createtime desc) AS ROWNUM from SpiderUrl where IsPull=0) t where ROWNUM between '+str(num1) +' and '+ str(num2)
 	data=pd.read_sql(sql1, con)
 	df=pd.DataFrame(data)['DocID']
 	return df
@@ -75,7 +82,25 @@ def UpdateCourt(OldCourtName,NewCourtName):
 	con.commit()
 
 def UdateTotalCount(CourtName,TotalCount):
-	sql='UPDATE [SpiderData].[dbo].[CourtList] SET TotalCount = '+"'"+TotalCount+"'"+'WHERE Court='+"'"+CourtName+"'"
+	sql='UPDATE [SpiderData].[dbo].[CourtList] SET TotalCount = '+str(TotalCount)+'WHERE Court='+"'"+CourtName+"'"
 	cursor=con.cursor()
 	cursor.execute(sql)
-con.commit()
+	con.commit()
+
+#
+def InsertProxy(df=pd.DataFrame()):
+	try:
+		df.to_sql('Proxy', scon,if_exists='append',index=False)
+		return 'Success'
+	except Exception as e:
+		return e
+
+#获取代理ip数据
+def GetProxyList():
+	sql='select * from Proxy'
+	data=pd.read_sql(sql, con)
+	df=pd.DataFrame(data)['Proxy']
+	return list(df)
+
+if __name__ == '__main__':
+	print(list(GetCourtList()[0:3]))
